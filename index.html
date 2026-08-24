@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkirSecure Pro - System Control Panel</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client v2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none w-11/12 max-w-md">
+        <div id="toast-bg" class="bg-slate-900 border border-emerald-500/50 shadow-2xl rounded-xl p-4 flex items-center gap-3">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+            <p id="toast-msg" class="text-xs font-semibold text-slate-200 leading-tight"></p>
+        </div>
+    </div>
+
+    <!-- Header & Network Monitor -->
+    <header id="app-header" class="hidden sticky top-0 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 z-40 px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+            </div>
+            <div>
+                <h1 class="text-sm font-black tracking-wide text-white">PARKIR MAULID</h1>
+                <p class="text-[10px] text-slate-400 flex items-center gap-1">
+                    Officer: <span id="current-officer" class="text-emerald-400 font-bold">-</span>
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="network-badge" class="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ONLINE
+            </span>
+            <button onclick="logoutAdmin()" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-red-400 transition">
+                <i class="fa-solid fa-power-off text-xs"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 w-full max-w-md mx-auto p-4 pb-24">
+
+        <!-- SCREEN 1: LOGIN ADMIN (SUPABASE AUTH) -->
+        <section id="login-screen" class="min-h-[80vh] flex flex-col justify-center items-center">
+            <div class="w-full bg-slate-900/60 border border-slate-800 p-6 rounded-2xl shadow-2xl backdrop-blur-xl">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-lock text-emerald-400 text-2xl"></i>
+                    </div>
+                    <h2 class="text-xl font-black text-white">PARKIR MAULID PRO</h2>
+                    <p class="text-xs text-slate-400 mt-1">Sistem Keamanan Parkir Motor Acara Maulid</p>
+                </div>
+
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Email Admin</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                            <input type="email" id="login-email" required placeholder="admin@maulid.org" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Password</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-key absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                            <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-10 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+                            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                                <i id="eye-icon" class="fa-solid fa-eye text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="login-error" class="hidden p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs font-semibold"></div>
+                    <button type="submit" id="btn-login-submit" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-xl text-xs transition shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2">
+                        <span>AUTHENTICATE LOGIN</span>
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: MAIN DASHBOARD VIEW -->
+        <div id="app-main" class="hidden space-y-5">
+            
+            <!-- VIEW TAB: DASHBOARD -->
+            <section id="view-dashboard" class="view-section space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Motor Masih Parkir</p>
+                        <p id="stat-active" class="text-3xl font-black text-emerald-400 mt-1">0</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Kapasitas Terpakai</p>
+                        <p id="stat-capacity" class="text-3xl font-black text-slate-200 mt-1">0/200</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <h3 class="text-xs font-bold text-white mb-3 flex items-center justify-between">
+                        <span>Aktivitas Sistem Terkini</span>
+                        <button onclick="renderDashboard()" class="text-emerald-400 hover:underline text-[10px]"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+                    </h3>
+                    <div id="recent-logs-list" class="space-y-2 max-h-48 overflow-y-auto text-xs text-slate-400">
+                        <p class="text-center py-4 text-slate-600">Memuat log aktivitas...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW TAB: MOTOR MASUK -->
+            <section id="view-masuk" class="view-section hidden space-y-4">
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                    <h2 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-motorcycle text-emerald-400"></i> Pendaftaran Motor Masuk
+                    </h2>
+                    <form id="form-masuk" class="space-y-4">
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Foto Bukti Motor (Wajib Kamera)</label>
+                            <input type="file" id="camera-masuk-input" accept="image/*" capture="environment" class="hidden" onchange="previewPhoto(event, 'preview-masuk-container')">
+                            <div id="preview-masuk-container" onclick="document.getElementById('camera-masuk-input').click()" class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 bg-slate-950">
+                                <i class="fa-solid fa-camera text-3xl text-emerald-400"></i>
+                                <p class="text-xs font-semibold text-slate-300">Ambil Foto Fisik Motor</p>
+                                <p class="text-[10px] text-slate-500">Klik untuk membuka kamera HP</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Nomor Plat</label>
+                            <input type="text" id="in-plat" required uppercase placeholder="B 1234 XYZ" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-xs text-white uppercase font-mono tracking-widest focus:outline-none focus:border-emerald-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Merek / Model</label>
+                                <input type="text" id="in-merek" required placeholder="Vario 150" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Warna</label>
+                                <input type="text" id="in-warna" required placeholder="Hitam Doff" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Blok Lokasi</label>
+                                <input type="text" id="in-lokasi" required placeholder="BLOK A-1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-xs text-white uppercase focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Ciri Khusus</label>
+                                <input type="text" id="in-ciri" placeholder="Stiker helm, helm merah" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-submit-masuk" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs transition shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up text-base"></i>
+                            <span>SIMPAN MOTOR MASUK</span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- VIEW TAB: MOTOR KELUAR -->
+            <section id="view-keluar" class="view-section hidden space-y-4">
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket text-emerald-400"></i> Verifikasi Motor Keluar
+                    </h2>
+                    
+                    <div class="flex gap-2">
+                        <input type="text" id="search-out-plat" placeholder="MASUKKAN PLAT MOTOR" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-xs text-white uppercase font-mono tracking-wider focus:outline-none focus:border-emerald-500">
+                        <button onclick="searchVehicle()" class="px-5 bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs hover:bg-emerald-400 transition">Cari</button>
+                    </div>
+
+                    <!-- CARD VERIFIKASI (HIDDEN BY DEFAULT) -->
+                    <div id="verification-card" class="hidden space-y-4 pt-4 border-t border-slate-800">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span id="v-status-badge" class="text-[10px] font-extrabold px-2.5 py-1 rounded-lg">STATUS</span>
+                                <h3 id="v-plat" class="text-xl font-black text-white font-mono mt-2"></h3>
+                                <p id="v-merek-warna" class="text-xs text-slate-400"></p>
+                            </div>
+                            <div class="text-right text-[10px] text-slate-400">
+                                <p>Lokasi: <span id="v-lokasi" class="text-emerald-400 font-bold"></span></p>
+                                <p id="v-id" class="font-mono text-[9px] text-slate-500 mt-1"></p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Bukti Foto Masuk Original</p>
+                            <img id="v-foto-masuk" src="" class="w-full h-48 object-cover rounded-xl border border-slate-800">
+                        </div>
+
+                        <!-- SECTION FOTO KELUAR -->
+                        <div id="section-foto-keluar" class="space-y-2">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Foto Motor Saat Keluar (Wajib)</p>
+                            <input type="file" id="camera-keluar-input" accept="image/*" capture="environment" class="hidden" onchange="previewPhoto(event, 'preview-keluar-container')">
+                            <div id="preview-keluar-container" onclick="document.getElementById('camera-keluar-input').click()" class="border-2 border-dashed border-slate-800 hover:border-emerald-500 rounded-xl p-3 text-center cursor-pointer bg-slate-950">
+                                <p class="text-xs text-slate-400"><i class="fa-solid fa-camera text-emerald-400"></i> Ketuk Ambil Foto Keluar</p>
+                            </div>
+                        </div>
+
+                        <!-- CHECKLIST VERIFIKASI -->
+                        <div id="section-checklist" class="space-y-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Checklist Pengamanan Fisik</p>
+                            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" class="verif-check rounded bg-slate-900 border-slate-700 text-emerald-500" onchange="validateChecklist()">
+                                <span>Plat Nomor sesuai dengan foto fisik</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" class="verif-check rounded bg-slate-900 border-slate-700 text-emerald-500" onchange="validateChecklist()">
+                                <span>Model & Warna Kendaraan cocok</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="checkbox" class="verif-check rounded bg-slate-900 border-slate-700 text-emerald-500" onchange="validateChecklist()">
+                                <span>STNK / Karcis cocok dengan fisik pemilik</span>
+                            </label>
+                        </div>
+
+                        <div id="section-exit-button">
+                            <button id="btn-allow-exit" disabled onclick="confirmProcessExit()" class="w-full py-3.5 bg-slate-800 text-slate-500 font-extrabold rounded-xl text-xs transition cursor-not-allowed">
+                                IZINKAN KELUAR
+                            </button>
+                        </div>
+
+                        <div id="section-already-exit" class="hidden p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs space-y-2">
+                            <p class="text-slate-400">Kendaraan telah keluar pada:</p>
+                            <p id="v-keluar-waktu" class="text-white font-bold"></p>
+                            <p class="text-[10px] text-slate-500">Petugas: <span id="v-keluar-petugas" class="text-slate-300"></span></p>
+                            <div id="v-foto-keluar-container" class="hidden mt-2">
+                                <p class="text-[10px] text-slate-400 mb-1">Foto Saat Keluar:</p>
+                                <img id="v-foto-keluar" src="" class="w-full h-32 object-cover rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW TAB: CARI & RIWAYAT -->
+            <section id="view-cari" class="view-section hidden space-y-4">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-white">Database Transaksi Parkir</h3>
+                        <div class="flex gap-1 text-[10px]">
+                            <button onclick="filterHistory('ALL')" class="px-2 py-1 rounded bg-slate-800 text-slate-300 font-bold">Semua</button>
+                            <button onclick="filterHistory('MASIH_PARKIR')" class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 font-bold">Parkir</button>
+                        </div>
+                    </div>
+                    <div id="history-list" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+                        <!-- Loaded Dynanically -->
+                    </div>
+                </div>
+
+                <!-- EXPORT & BACKUP TOOLS -->
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2">
+                    <h4 class="text-xs font-bold text-white">Manajemen & Backup Data</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="exportToCSV()" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 border border-slate-700">
+                            <i class="fa-solid fa-file-csv text-emerald-400"></i> Export CSV
+                        </button>
+                        <button onclick="exportBackupJSON()" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 border border-slate-700">
+                            <i class="fa-solid fa-file-code text-blue-400"></i> Backup JSON
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Navigation Footer Bar -->
+    <nav id="app-nav" class="hidden fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 z-40 max-w-md mx-auto">
+        <div class="grid grid-cols-3 p-1">
+            <button id="nav-dashboard" onclick="switchTab('dashboard')" class="nav-btn py-3 text-center text-emerald-400">
+                <i class="fa-solid fa-chart-pie text-lg block"></i>
+                <span class="text-[10px] font-bold block mt-0.5">Status</span>
+            </button>
+            <button id="nav-masuk" onclick="switchTab('masuk')" class="nav-btn py-3 text-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-circle-plus text-lg block"></i>
+                <span class="text-[10px] font-bold block mt-0.5">Motor Masuk</span>
+            </button>
+            <button id="nav-keluar" onclick="switchTab('keluar')" class="nav-btn py-3 text-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-shield-check text-lg block"></i>
+                <span class="text-[10px] font-bold block mt-0.5">Motor Keluar</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MODAL CONFIRMATION KELUAR -->
+    <div id="modal-confirm-exit" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-xs space-y-4">
+            <h3 class="text-sm font-bold text-white">Konfirmasi Izinkan Keluar</h3>
+            <p id="modal-confirm-exit-text" class="text-xs text-slate-400 leading-relaxed"></p>
+            <div class="flex gap-2">
+                <button onclick="closeModal('modal-confirm-exit')" class="flex-1 py-2.5 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl">Batal</button>
+                <button onclick="executeVehicleExit()" class="flex-1 py-2.5 bg-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20">Ya, Izinkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DUPLIKASI PLAT -->
+    <div id="modal-duplicate" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-red-500/30 rounded-2xl p-5 w-full max-w-xs space-y-4">
+            <div class="flex items-center gap-2 text-red-400">
+                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                <h3 class="text-sm font-bold">Plat Masih Aktif!</h3>
+            </div>
+            <p class="text-xs text-slate-300">Kendaraan dengan plat ini terdeteksi masih berada di dalam area parkir.</p>
+            <div id="dup-details" class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-[11px] text-slate-400 space-y-1"></div>
+            <button onclick="closeModal('modal-duplicate')" class="w-full py-2.5 bg-slate-800 text-white font-bold text-xs rounded-xl">Tutup & Periksa</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
