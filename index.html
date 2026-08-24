@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkirMaulid - Sistem Keamanan Parkir Motor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-24 select-none">
+
+    <!-- Top Header Bar -->
+    <header class="sticky top-0 z-40 glass border-b border-slate-800/80 px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-slate-950 font-black text-xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-sm tracking-tight text-white flex items-center gap-1.5">
+                    PARKIR MAULID <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded font-bold">PRO</span>
+                </h1>
+                <p class="text-[11px] text-slate-400 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></i></span> Petugas: <span id="current-officer" class="text-slate-200 font-semibold">Andi</span>
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="openModal('modal-login')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 transition">
+                <i class="fa-solid fa-user-gear mr-1"></i> Ganti
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container Content -->
+    <main class="max-w-md mx-auto p-4 space-y-5">
+
+        <!-- VIEW: DASHBOARD -->
+        <section id="view-dashboard" class="space-y-4 view-section">
+            <!-- Banner / Notice -->
+            <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/30 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] uppercase tracking-wider font-bold text-emerald-400 bg-emerald-900/40 px-2 py-0.5 rounded">Keamanan Aktif</span>
+                    <h2 class="text-base font-bold text-white mt-1">Acara Maulid Nabi SAW</h2>
+                    <p class="text-xs text-slate-300 mt-0.5">Sistem Verifikasi Anti-Tertukar & Anti-Pencurian</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-2xl font-black text-emerald-400">127</span>
+                    <p class="text-[10px] text-slate-400">Motor di Parkir</p>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="glass-card p-4 rounded-2xl border-l-4 border-l-emerald-500">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-medium text-slate-400">Masuk Hari Ini</span>
+                        <i class="fa-solid fa-arrow-right-to-bracket text-emerald-400 text-sm"></i>
+                    </div>
+                    <div class="text-2xl font-black text-white mt-2" id="stat-masuk">184</div>
+                    <span class="text-[10px] text-emerald-400 font-medium">+12 motor/jam</span>
+                </div>
+                <div class="glass-card p-4 rounded-2xl border-l-4 border-l-blue-500">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-medium text-slate-400">Sudah Keluar</span>
+                        <i class="fa-solid fa-arrow-right-from-bracket text-blue-400 text-sm"></i>
+                    </div>
+                    <div class="text-2xl font-black text-white mt-2" id="stat-keluar">57</div>
+                    <span class="text-[10px] text-blue-400 font-medium">Transaksi normal</span>
+                </div>
+            </div>
+
+            <!-- Warning & Capacity Card -->
+            <div class="grid grid-cols-2 gap-3">
+                <div onclick="switchTab('keluar')" class="glass-card p-3 rounded-2xl border border-amber-500/30 bg-amber-950/10 cursor-pointer hover:bg-amber-900/20 transition">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-white">2</div>
+                            <div class="text-[11px] text-amber-400 font-medium leading-tight">Perlu Diperiksa</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-3 rounded-2xl border border-slate-700">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400">Kapasitas</span>
+                        <span class="text-emerald-400 font-bold">127 / 200</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden mt-2">
+                        <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full" style="width: 63.5%"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400 mt-1.5 block">Zona A & B (Tersedia 73)</span>
+                </div>
+            </div>
+
+            <!-- Action Quick Buttons -->
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="switchTab('masuk')" class="w-full py-4 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/30 flex flex-col items-center justify-center gap-1 transition active:scale-95">
+                    <i class="fa-solid fa-motorcycle text-2xl"></i>
+                    <span class="text-sm tracking-wide">MOTOR MASUK</span>
+                </button>
+                <button onclick="switchTab('keluar')" class="w-full py-4 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-lg shadow-blue-600/30 flex flex-col items-center justify-center gap-1 transition active:scale-95">
+                    <i class="fa-solid fa-key text-2xl"></i>
+                    <span class="text-sm tracking-wide">MOTOR KELUAR</span>
+                </button>
+            </div>
+
+            <!-- Realtime Activity Stream -->
+            <div class="glass p-4 rounded-2xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-wave-square text-emerald-400"></i> Aktivitas Realtime
+                    </h3>
+                    <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">Live Update</span>
+                </div>
+                <div class="space-y-2.5 text-xs" id="activity-stream">
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/50 border border-slate-800/60">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="font-mono font-bold text-white">B 1234 XYZ</span>
+                            <span class="text-slate-400">• Honda Beat</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-emerald-400 font-semibold">MASUK</span>
+                            <div class="text-[10px] text-slate-500">19:42</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/50 border border-slate-800/60">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                            <span class="font-mono font-bold text-white">B 7788 ABC</span>
+                            <span class="text-slate-400">• Yamaha NMAX</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-blue-400 font-semibold">KELUAR</span>
+                            <div class="text-[10px] text-slate-500">21:14</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: MOTOR MASUK -->
+        <section id="view-masuk" class="space-y-4 view-section hidden">
+            <div class="glass p-5 rounded-3xl space-y-4 border border-emerald-500/20">
+                <div class="flex items-center space-x-3 pb-2 border-b border-slate-800">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-motorcycle text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-base text-white">Pencatatan Motor Masuk</h2>
+                        <p class="text-xs text-slate-400">Input data fisik & foto kendaraan tanpa tiket</p>
+                    </div>
+                </div>
+
+                <form id="form-masuk" onsubmit="handleMotorMasuk(event)" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor Plat Kendaraan *</label>
+                        <input type="text" id="in-plat" required placeholder="Contoh: B 1234 XYZ" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white uppercase font-mono tracking-wider focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Merek / Jenis Motor *</label>
+                            <input type="text" id="in-merek" required placeholder="Honda Beat" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Warna Motor *</label>
+                            <input type="text" id="in-warna" required placeholder="Hitam" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Nomor / Lokasi Parkir *</label>
+                        <input type="text" id="in-lokasi" required placeholder="Zona A-027" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Catatan Ciri Khusus</label>
+                        <input type="text" id="in-ciri" placeholder="Contoh: Ada stiker NU di spakbor belakang" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+
+                    <!-- Kamera & Foto -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">📸 Foto Bukti Kendaraan Masuk</label>
+                        <div class="border-2 border-dashed border-slate-700 rounded-2xl p-4 text-center bg-slate-900/50 hover:bg-slate-900 transition cursor-pointer relative" onclick="simulateCamera('preview-masuk')">
+                            <input type="file" accept="image/*" capture="environment" id="file-masuk" class="absolute inset-0 opacity-0 cursor-pointer">
+                            <div id="preview-container-masuk" class="space-y-1">
+                                <i class="fa-solid fa-camera text-2xl text-emerald-400"></i>
+                                <p class="text-xs font-semibold text-slate-300">Ketuk untuk Ambil Foto</p>
+                                <p class="text-[10px] text-slate-500">Pastikan plat, warna & bentuk motor terlihat jelas</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-2xl shadow-lg shadow-emerald-500/20 text-sm tracking-wide transition active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-check text-lg"></i> SIMPAN & CATAT KENDARAAN
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- VIEW: MOTOR KELUAR & VERIFIKASI -->
+        <section id="view-keluar" class="space-y-4 view-section hidden">
+            <div class="glass p-5 rounded-3xl space-y-4 border border-blue-500/20">
+                <div class="flex items-center space-x-3 pb-2 border-b border-slate-800">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-key text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-base text-white">Verifikasi Motor Keluar</h2>
+                        <p class="text-xs text-slate-400">Pencarian plat & validasi fisik keamanan</p>
+                    </div>
+                </div>
+
+                <!-- Input Pencarian Plat -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-semibold text-slate-300">Masukkan Nomor Plat Tujuan</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="search-out-plat" placeholder="B 1234 XYZ" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white uppercase font-mono font-bold tracking-wider focus:outline-none focus:border-blue-500 transition">
+                        <button onclick="cariKendaraanKeluar()" class="px-5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition active:scale-95 flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass"></i> Cek
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HASIL VERIFIKASI KENDARAAN (Dynamic Card) -->
+            <div id="verification-result-card" class="hidden glass p-5 rounded-3xl space-y-4 border border-amber-500/40 bg-slate-900/90">
+                <div class="flex justify-between items-center">
+                    <span class="bg-amber-500/20 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-cat"></i> 🔐 VERIFIKASI KENDARAAN
+                    </span>
+                    <span id="verif-status-badge" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400">MASIH PARKIR</span>
+                </div>
+
+                <!-- Detail Kendaraan -->
+                <div class="grid grid-cols-2 gap-3 bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800 text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">NOMOR PLAT</span>
+                        <strong id="v-plat" class="text-white font-mono text-sm">B 1234 XYZ</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">LOKASI PARKIR</span>
+                        <strong id="v-parkir" class="text-emerald-400 font-bold text-sm">A-027</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">JENIS MOTOR</span>
+                        <strong id="v-merek" class="text-slate-200">Honda Beat</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">WARNA & CIRI</span>
+                        <strong id="v-warna" class="text-slate-200">Hitam (Stiker NU)</strong>
+                    </div>
+                    <div class="col-span-2 pt-1 border-t border-slate-800/80 flex justify-between">
+                        <div>
+                            <span class="text-slate-400 text-[10px]">WAKTU MASUK:</span> <span id="v-waktu" class="font-semibold text-slate-300">19:42</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 text-[10px]">PENCATAT:</span> <span id="v-petugas" class="font-semibold text-slate-300">Andi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOTO SAAT MASUK -->
+                <div class="space-y-1">
+                    <span class="text-[11px] font-semibold text-slate-400">📸 Foto Dokumentasi Saat Masuk:</span>
+                    <div class="h-32 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent z-10"></div>
+                        <i class="fa-solid fa-motorcycle text-4xl text-slate-700 absolute"></i>
+                        <span class="z-20 text-xs font-semibold text-slate-300 bg-slate-900/80 px-3 py-1 rounded-full border border-slate-700">Foto Motor Masuk Terverifikasi</span>
+                    </div>
+                </div>
+
+                <!-- CHECKLIST VERIFIKASI FISIK (Wajib Centang) -->
+                <div class="space-y-2 pt-2 border-t border-slate-800">
+                    <p class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-clipboard-check"></i> Checklist Verifikasi Fisik oleh Petugas:
+                    </p>
+                    <div class="space-y-2 text-xs">
+                        <label class="flex items-center space-x-2.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-900 transition">
+                            <input type="checkbox" class="check-item w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-emerald-500 bg-slate-900">
+                            <span class="text-slate-200">Plat nomor fisik sesuai dengan data sistem</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-900 transition">
+                            <input type="checkbox" class="check-item w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-emerald-500 bg-slate-900">
+                            <span class="text-slate-200">Jenis & merek motor sesuai (Honda Beat)</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-900 transition">
+                            <input type="checkbox" class="check-item w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-emerald-500 bg-slate-900">
+                            <span class="text-slate-200">Warna kendaraan sesuai (Hitam)</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-900 transition">
+                            <input type="checkbox" class="check-item w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-emerald-500 bg-slate-900">
+                            <span class="text-slate-200">Ciri fisik / stiker / helm cocok</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Tombol Keputusan Keamanan -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="tolakKeluar()" class="py-3 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 font-bold rounded-xl text-xs transition active:scale-95 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-triangle-exclamation"></i> TDAK SESUAI
+                    </button>
+                    <button onclick="prosesKeluar()" class="py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-xl text-xs transition active:scale-95 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-check-double"></i> IZINKAN KELUAR
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: PENCARIAN & DATA PARKIR -->
+        <section id="view-cari" class="space-y-4 view-section hidden">
+            <div class="glass p-5 rounded-3xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-bold text-base text-white flex items-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass text-emerald-400"></i> Pencarian Super Cepat
+                    </h2>
+                    <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">Realtime Filter</span>
+                </div>
+
+                <!-- Search Bar Besar -->
+                <div class="relative">
+                    <i class="fa-solid fa-search absolute left-4 top-3.5 text-slate-400 text-base"></i>
+                    <input type="text" id="live-search-input" oninput="filterDataParkir()" placeholder="Ketik nomor plat atau jenis motor..." class="w-full bg-slate-900 border border-slate-700 rounded-2xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 uppercase font-mono tracking-wider focus:outline-none focus:border-emerald-500 transition">
+                </div>
+
+                <!-- List Kendaraan -->
+                <div class="space-y-2.5 pt-1" id="list-kendaraan-container">
+                    <!-- Item 1 -->
+                    <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-white text-sm">B 1234 XYZ</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">MASIH PARKIR</span>
+                            </div>
+                            <p class="text-xs text-slate-300 mt-0.5">Honda Beat • Hitam</p>
+                            <span class="text-[10px] text-slate-500 font-mono">Parkir: A-027 • Masuk: 19:42</span>
+                        </div>
+                        <button onclick="pilihUntukKeluar('B 1234 XYZ')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl text-slate-200 border border-slate-700 transition">
+                            Proses <i class="fa-solid fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                    <!-- Item 2 -->
+                    <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-white text-sm">B 8899 MNO</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">MASIH PARKIR</span>
+                            </div>
+                            <p class="text-xs text-slate-300 mt-0.5">Yamaha NMAX • Putih</p>
+                            <span class="text-[10px] text-slate-500 font-mono">Parkir: B-012 • Masuk: 20:05</span>
+                        </div>
+                        <button onclick="pilihUntukKeluar('B 8899 MNO')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl text-slate-200 border border-slate-700 transition">
+                            Proses <i class="fa-solid fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                    <!-- Item 3 -->
+                    <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between opacity-75">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-slate-400 text-sm">B 7788 ABC</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold">SUDAH KELUAR</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-0.5">Yamaha Mio • Merah</p>
+                            <span class="text-[10px] text-slate-600 font-mono">Keluar oleh: Rizky (21:14)</span>
+                        </div>
+                        <span class="text-xs text-slate-500 font-medium px-2 py-1">Selesai</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: MENU / RIWAYAT -->
+        <section id="view-menu" class="space-y-4 view-section hidden">
+            <div class="glass p-5 rounded-3xl space-y-4">
+                <h2 class="font-bold text-base text-white flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Riwayat & Pengaturan
+                </h2>
+                
+                <div class="space-y-2">
+                    <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-file-excel"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-white">Ekspor Log Parkir</h3>
+                                <p class="text-[11px] text-slate-400">Unduh laporan acara Maulid</p>
+                            </div>
+                        </div>
+                        <button onclick="alert('Laporan berhasil diunduh ke perangkat.')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl transition">Unduh</button>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-white">Mode Keamanan Ketat</h3>
+                                <p class="text-[11px] text-slate-400">Validasi foto ganda aktif</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded-lg border border-emerald-500/30">AKTIF</span>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-white">Daftar Petugas Bertugas</h3>
+                                <p class="text-[11px] text-slate-400">Andi, Rizky, Farhan</p>
+                            </div>
+                        </div>
+                        <button onclick="openModal('modal-login')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 rounded-xl transition">Ganti</button>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800 text-center">
+                    <p class="text-[10px] text-slate-500">Sistem Keamanan Parkir Motor v2.6 • Khusus Acara Akbar</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION BAR (Mobile First Optimized) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-800 py-2 px-3 max-w-md mx-auto">
+        <div class="grid grid-cols-5 gap-1 text-center">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex flex-col items-center justify-center py-1 text-emerald-400 transition">
+                <i class="fa-solid fa-chart-pie text-lg mb-0.5"></i>
+                <span class="text-[10px] font-bold">Dash</span>
+            </button>
+            <button onclick="switchTab('masuk')" id="nav-masuk" class="nav-btn flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-motorcycle text-lg mb-0.5"></i>
+                <span class="text-[10px] font-semibold">Masuk</span>
+            </button>
+            <button onclick="switchTab('keluar')" id="nav-keluar" class="nav-btn flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-key text-lg mb-0.5"></i>
+                <span class="text-[10px] font-semibold">Keluar</span>
+            </button>
+            <button onclick="switchTab('cari')" id="nav-cari" class="nav-btn flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-magnifying-glass text-lg mb-0.5"></i>
+                <span class="text-[10px] font-semibold">Cari</span>
+            </button>
+            <button onclick="switchTab('menu')" id="nav-menu" class="nav-btn flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-bars text-lg mb-0.5"></i>
+                <span class="text-[10px] font-semibold">Menu</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MODAL LOGIN PETUGAS -->
+    <div id="modal-login" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="glass p-6 rounded-3xl w-full max-w-sm space-y-4 border border-slate-700 shadow-2xl">
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-2xl mx-auto flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h3 class="font-bold text-base text-white">Identifikasi Petugas Parkir</h3>
+                <p class="text-xs text-slate-400">Masukkan nama Anda untuk memulai pencatatan transaksi</p>
+            </div>
+            <div class="space-y-3 pt-2">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nama Petugas</label>
+                    <input type="text" id="input-nama-petugas" value="Andi" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-emerald-500">
+                </div>
+                <button onclick="gantiPetugas()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-xl text-sm transition">
+                    MULAI BERTUGAS
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Database Simulasi Parkir
+        let databaseParkir = [
+            { plat: "B 1234 XYZ", merek: "Honda Beat", warna: "Hitam", lokasi: "A-027", ciri: "Stiker NU di spakbor", waktuMasuk: "19:42", status: "MASIH PARKIR", petugas: "Andi" },
+            { plat: "B 8899 MNO", merek: "Yamaha NMAX", warna: "Putih", lokasi: "B-012", ciri: "Helm hitam di spion", waktuMasuk: "20:05", status: "MASIH PARKIR", petugas: "Andi" },
+            { plat: "B 7788 ABC", merek: "Yamaha Mio", warna: "Merah", lokasi: "A-005", ciri: "Knalpot standar", waktuMasuk: "18:30", waktuKeluar: "21:14", status: "SUDAH KELUAR", petugas: "Andi", petugasKeluar: "Rizky" }
+        ];
+
+        let currentOfficerName = "Andi";
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-emerald-400');
+                el.classList.add('text-slate-400');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if(activeNav) {
+                activeNav.classList.remove('text-slate-400');
+                activeNav.classList.add('text-emerald-400');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function gantiPetugas() {
+            const name = document.getElementById('input-nama-petugas').value.trim();
+            if(name) {
+                currentOfficerName = name;
+                document.getElementById('current-officer').innerText = name;
+                closeModal('modal-login');
+            }
+        }
+
+        // Simulasi Kamera HP
+        function simulateCamera(previewId) {
+            const container = document.getElementById('preview-container-masuk');
+            container.innerHTML = `
+                <div class="flex items-center justify-center space-x-2 text-emerald-400">
+                    <i class="fa-solid fa-circle-check text-xl"></i>
+                    <span class="text-xs font-bold">Foto Kendaraan Berhasil Diambil!</span>
+                </div>
+            `;
+        }
+
+        // Handle Motor Masuk
+        function handleMotorMasuk(e) {
+            e.preventDefault();
+            const plat = document.getElementById('in-plat').value.toUpperCase().trim();
+            const merek = document.getElementById('in-merek').value.trim();
+            const warna = document.getElementById('in-warna').value.trim();
+            const lokasi = document.getElementById('in-lokasi').value.toUpperCase().trim();
+            const ciri = document.getElementById('in-ciri').value.trim();
+
+            // Anti Duplikasi Check
+            const existing = databaseParkir.find(item => item.plat === plat && item.status === "MASIH PARKIR");
+            if(existing) {
+                alert(`⚠️ PERINGATAN: Plat ${plat} sudah terdaftar masih parkir di lokasi ${existing.lokasi}!`);
+                return;
+            }
+
+            const now = new Date();
+            const timeString = String(now.getHours()).padStart(2,'0') + ":" + String(now.getMinutes()).padStart(2,'0');
+
+            const newRecord = {
+                plat, merek, warna, lokasi, ciri,
+                waktuMasuk: timeString,
+                status: "MASIH PARKIR",
+                petugas: currentOfficerName
+            };
+
+            databaseParkir.unshift(newRecord);
+
+            // Update UI Stats & Activity Stream
+            alert(`✅ KENDARAAN BERHASIL DICATAT\nPlat: ${plat}\nLokasi: ${lokasi}`);
+            document.getElementById('form-masuk').reset();
+            document.getElementById('preview-container-masuk').innerHTML = `
+                <i class="fa-solid fa-camera text-2xl text-emerald-400"></i>
+                <p class="text-xs font-semibold text-slate-300">Ketuk untuk Ambil Foto</p>
+                <p class="text-[10px] text-slate-500">Pastikan plat, warna & bentuk motor terlihat jelas</p>
+            `;
+            
+            // Tambahkan ke realtime stream
+            prependActivityStream(plat, merek, "MASIH PARKIR", timeString);
+            switchTab('dashboard');
+        }
+
+        function prependActivityStream(plat, merek, status, time) {
+            const stream = document.getElementById('activity-stream');
+            const item = document.createElement('div');
+            item.className = "flex items-center justify-between p-2 rounded-xl bg-slate-900/50 border border-slate-800/60 animate-fade-in";
+            item.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span class="font-mono font-bold text-white">${plat}</span>
+                    <span class="text-slate-400">• ${merek}</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-emerald-400 font-semibold">MASUK</span>
+                    <div class="text-[10px] text-slate-500">${time}</div>
+                </div>
+            `;
+            stream.prepend(item);
+        }
+
+        // Cari Kendaraan Keluar
+        function cariKendaraanKeluar() {
+            const platQuery = document.getElementById('search-out-plat').value.toUpperCase().trim();
+            const found = databaseParkir.find(item => item.plat === platQuery);
+
+            const card = document.getElementById('verification-result-card');
+            if(found) {
+                card.classList.remove('hidden');
+                document.getElementById('v-plat').innerText = found.plat;
+                document.getElementById('v-parkir').innerText = found.lokasi;
+                document.getElementById('v-merek').innerText = found.merek;
+                document.getElementById('v-warna').innerText = `${found.warna} (${found.ciri || 'Tanpa ciri khusus'})`;
+                document.getElementById('v-waktu').innerText = found.waktuMasuk;
+                document.getElementById('v-petugas').innerText = found.petugas;
+
+                const badge = document.getElementById('verif-status-badge');
+                badge.innerText = found.status;
+                if(found.status === "MASIH PARKIR") {
+                    badge.className = "text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400";
+                } else {
+                    badge.className = "text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400";
+                }
+            } else {
+                alert("⚠️ Kendaraan dengan plat tersebut tidak ditemukan di sistem parkir.");
+                card.classList.add('hidden');
+            }
+        }
+
+        function pilihUntukKeluar(plat) {
+            switchTab('keluar');
+            document.getElementById('search-out-plat').value = plat;
+            cariKendaraanKeluar();
+        }
+
+        function tolakKeluar() {
+            alert("🚨 PERINGATAN: Data tidak sesuai! Jangan keluarkan kendaraan sebelum pemilik membuktikan kepemilikan fisik atau STNK.");
+        }
+
+        function prosesKeluar() {
+            // Cek checklist
+            const checkboxes = document.querySelectorAll('.check-item');
+            let allChecked = true;
+            checkboxes.forEach(cb => {
+                if(!cb.checked) allChecked = false;
+            });
+
+            if(!allChecked) {
+                alert("⚠️ Harap selesaikan seluruh checklist verifikasi fisik terlebih dahulu untuk memastikan keamanan motor.");
+                return;
+            }
+
+            const plat = document.getElementById('v-plat').innerText;
+            const record = databaseParkir.find(item => item.plat === plat);
+            if(record) {
+                record.status = "SUDAH KELUAR";
+                record.petugasKeluar = currentOfficerName;
+            }
+
+            alert(`✅ VERIFIKASI BERHASIL! Kendaraan ${plat} diizinkan keluar.`);
+            document.getElementById('verification-result-card').classList.add('hidden');
+            document.getElementById('search-out-plat').value = "";
+            switchTab('dashboard');
+        }
+    </script>
+</body>
+</html>
